@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package parser;
+
+option go_package = "./;test_pb";
+
+import "google/protobuf/empty.proto";
+import "test/TestModels.proto";
+
+service TestService {
+  rpc Ping(google.protobuf.Empty) returns (PingResponse);
+}

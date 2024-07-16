@@ -1,0 +1,18 @@
+grpc_server:
+  max_connection_idle: "5m"
+  max_connection_age: "1h"
+  time: "1m"
+  timeout: "10s"
+
+server:
+  read_timeout: "5s"
+  write_timeout: "10s"
+  shutdown_timeout: "10s"
+
+jaeger:
+  service_name: "service"
+  log_span: true
+
+postgres:
+  max_conns: 30
+  min_conns: 10
