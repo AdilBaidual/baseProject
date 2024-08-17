@@ -12,22 +12,8 @@ services:
     networks:
       - base_project_network
     depends_on:
-      valkey:
-        condition: service_healthy
       postgres:
         condition: service_healthy
-
-  valkey:
-    image: valkey/valkey:7.2.5
-    container_name: base_project_valkey
-    restart: unless-stopped
-    command: sh -c 'printf "requirepass ${VALKEY_PASSWORD}\nloglevel debug" | valkey-server -'
-    environment:
-      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
-    networks:
-      - base_project_network
-    healthcheck:
-      test: [ "CMD", "valkey-cli", "ping" ]
 
   postgres:
     container_name: base_project_postgres
@@ -90,7 +76,6 @@ services:
 
 volumes:
   postgres_data:
-  valkey_data:
   redis_data:
 
 networks:
