@@ -5,9 +5,15 @@ package parser;
 option go_package = "github.com/AdilBaidual/baseProject/test;test";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 service TestService {
-  rpc Ping(google.protobuf.Empty) returns (PingResponse);
+  rpc Ping(google.protobuf.Empty) returns (PingResponse) {
+    option (google.api.http) = {
+      post: "/test",
+      body: "*"
+    };
+  }
 }
 
 message PingResponse {

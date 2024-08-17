@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/AdilBaidual/baseProject/constant"
-	testpb "github.com/AdilBaidual/baseProject/internal/pb/api/test"
+	"github.com/AdilBaidual/baseProject/internal/pb/baseProject/test"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -12,14 +12,14 @@ import (
 )
 
 type Handler struct {
-	testpb.TestServiceServer
+	test.TestServiceServer
 }
 
 func Register(gRPCServer *grpc.Server) {
-	testpb.RegisterTestServiceServer(gRPCServer, &Handler{})
+	test.RegisterTestServiceServer(gRPCServer, &Handler{})
 }
 
-func (h *Handler) Ping(ctx context.Context, _ *emptypb.Empty) (*testpb.PingResponse, error) {
+func (h *Handler) Ping(ctx context.Context, _ *emptypb.Empty) (*test.PingResponse, error) {
 	tracer := otel.Tracer(constant.ServiceName)
 	_, span := tracer.Start(ctx, "pong")
 	defer span.End()
@@ -31,5 +31,5 @@ func (h *Handler) Ping(ctx context.Context, _ *emptypb.Empty) (*testpb.PingRespo
 		logger.Info("logger found!")
 	}
 
-	return &testpb.PingResponse{Message: "pong"}, nil
+	return &test.PingResponse{Message: "pong"}, nil
 }
