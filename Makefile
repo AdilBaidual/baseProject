@@ -17,9 +17,6 @@ print-env:
 # Команды для генерации gRPC кода
 generate: .generate
 
-.proto-path:
-	cd api
-
 .generate:
 	@protoc -I $(PROTO_API) \
 		--grpc-gateway_out=./internal/pb \

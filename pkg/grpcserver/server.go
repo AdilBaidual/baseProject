@@ -54,3 +54,7 @@ func (s *Server) Start() error {
 func (s *Server) Stop() {
 	s.Srv.GracefulStop()
 }
+
+func GetGrpcServer(s *Server) *grpc.Server {
+	return s.Srv
+}

@@ -4,16 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/AdilBaidual/baseProject/config"
-	grpchandler "github.com/AdilBaidual/baseProject/internal/TestEntity/delivery/gprc"
-	httphandler "github.com/AdilBaidual/baseProject/internal/TestEntity/delivery/http"
-	"github.com/AdilBaidual/baseProject/internal/TestEntity/usecase"
+	testhandler "github.com/AdilBaidual/baseProject/internal/app/test"
 	"github.com/AdilBaidual/baseProject/internal/interceptor"
-	"github.com/AdilBaidual/baseProject/internal/middleware"
+	"github.com/AdilBaidual/baseProject/internal/service/test_service"
+	"github.com/AdilBaidual/baseProject/internal/store"
 	"github.com/AdilBaidual/baseProject/pkg/grpcserver"
 	"github.com/AdilBaidual/baseProject/pkg/httpserver"
 	"github.com/AdilBaidual/baseProject/pkg/jaeger"
 	"github.com/AdilBaidual/baseProject/pkg/storage/postgres"
-	"github.com/gin-gonic/gin"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -21,6 +20,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"net/http"
 	"strconv"
@@ -32,10 +32,10 @@ func NewApp() fx.Option {
 		LoggerModule(),
 		PostgresModule(),
 		RepositoryModule(),
-		UseCaseModule(),
-		JaegerModule(),
-		HTTPModule(),
-		GRPCModule(),
+		ServiceModule(),
+		//JaegerModule(),
+		HandlerModule(),
+		DeliveryModule(),
 		CheckInitializedModules(),
 	)
 }
@@ -79,7 +79,7 @@ func LoggerModule() fx.Option {
 }
 
 func PostgresModule() fx.Option {
-	return fx.Module("repository",
+	return fx.Module("postgres",
 		fx.Provide(
 			func(cfg *config.Config) postgres.Config {
 				return cfg.Postgres
@@ -131,35 +131,80 @@ func RepositoryModule() fx.Option {
 			func(storage *postgres.Storage) *pgxpool.Pool {
 				return storage.DB
 			},
+			store.NewStore,
 		),
 	)
 }
 
-func UseCaseModule() fx.Option {
-	return fx.Module("usecase",
+func ServiceModule() fx.Option {
+	return fx.Module("service",
 		fx.Provide(
-			usecase.NewTestUseCase,
+			test_service.NewService,
 		),
 	)
 }
 
-func HTTPModule() fx.Option {
-	return fx.Module("http server",
+func HandlerModule() fx.Option {
+	return fx.Module("handler",
 		fx.Provide(
-			func(cfg *config.Config) httpserver.Config {
-				return cfg.HTTPServer
+			testhandler.NewHandler,
+		),
+	)
+}
+
+func DeliveryModule() fx.Option {
+	return fx.Module("delivery",
+		fx.Provide(
+			func(cfg *config.Config) (grpcserver.Config, httpserver.Config) {
+				return cfg.GRPCServer, cfg.HTTPServer
 			},
-			middleware.NewMiddleware,
-			httphandler.NewHandler,
-			fx.Annotate(
-				func(h *httphandler.Handler) *gin.Engine {
-					return h.InitRoutes()
-				},
-				fx.As(new(http.Handler)),
-			),
+			func() context.Context {
+				return context.Background()
+			},
+			interceptor.NewInterceptor,
+			func(ic *interceptor.Interceptor) []grpc.ServerOption {
+				return []grpc.ServerOption{
+					grpc.UnaryInterceptor(ic.LoggingInterceptor()),
+					grpc.StatsHandler(otelgrpc.NewServerHandler()),
+				}
+			},
+			runtime.NewServeMux,
+			func(mux *runtime.ServeMux) http.Handler {
+				return mux
+			},
+			func(cfg grpcserver.Config) (*grpc.ClientConn, error) {
+				return grpc.NewClient(
+					net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
+					grpc.WithTransportCredentials(insecure.NewCredentials()),
+				)
+			},
+
+			grpcserver.NewServer,
 			httpserver.NewServer,
+			grpcserver.GetGrpcServer,
 		),
 		fx.Invoke(
+			testhandler.Register,
+			func(lc fx.Lifecycle, srv *grpcserver.Server, cfg grpcserver.Config, logger *zap.Logger, shutdowner fx.Shutdowner) {
+				lc.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						go func() {
+							logger.Info(fmt.Sprintf("starting GRPC server {%s}", net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))))
+							if err := srv.Start(); err != nil {
+								logger.Error("error starting GRPC server",
+									zap.Error(err),
+									zap.String("address", net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))),
+								)
+							}
+						}()
+						return nil
+					},
+					OnStop: func(ctx context.Context) error {
+						srv.Stop()
+						return nil
+					},
+				})
+			},
 			func(lc fx.Lifecycle, srv *httpserver.Server, cfg httpserver.Config, logger *zap.Logger, shutdowner fx.Shutdowner) {
 				lc.Append(fx.Hook{
 					OnStart: func(ctx context.Context) error {
@@ -184,49 +229,8 @@ func HTTPModule() fx.Option {
 						return nil
 					},
 				})
-			}),
-	)
-}
-
-func GRPCModule() fx.Option {
-	return fx.Module("grpc server",
-		fx.Provide(
-			func(cfg *config.Config) grpcserver.Config {
-				return cfg.GRPCServer
 			},
-			interceptor.NewInterceptor,
-			func(ic *interceptor.Interceptor) []grpc.ServerOption {
-				return []grpc.ServerOption{
-					grpc.UnaryInterceptor(ic.LoggingInterceptor()),
-					grpc.StatsHandler(otelgrpc.NewServerHandler()),
-				}
-			},
-			grpcserver.NewServer,
 		),
-		fx.Invoke(
-			func(srv *grpcserver.Server) {
-				grpchandler.Register(srv.Srv)
-			},
-			func(lc fx.Lifecycle, srv *grpcserver.Server, cfg grpcserver.Config, logger *zap.Logger, shutdowner fx.Shutdowner) {
-				lc.Append(fx.Hook{
-					OnStart: func(ctx context.Context) error {
-						go func() {
-							logger.Info(fmt.Sprintf("starting grpc server {%s}", net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))))
-							if err := srv.Start(); err != nil {
-								logger.Error("error starting GRPC server",
-									zap.Error(err),
-									zap.String("address", net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))),
-								)
-							}
-						}()
-						return nil
-					},
-					OnStop: func(ctx context.Context) error {
-						srv.Stop()
-						return nil
-					},
-				})
-			}),
 	)
 }
 
@@ -236,7 +240,10 @@ func CheckInitializedModules() fx.Option {
 			func(cfg *config.Config) {},
 			func(logger *zap.Logger) {},
 			func(storage *postgres.Storage) {},
-			func(tracer *sdktrace.TracerProvider) {},
+			func(store *store.Store) {},
+			func(test *test_service.Service) {},
+			func(test *testhandler.Handler) {},
+			//func(tracer *sdktrace.TracerProvider) {},
 			func(srv *grpcserver.Server) {},
 			func(srv *httpserver.Server) {},
 		),

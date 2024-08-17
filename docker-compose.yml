@@ -1,0 +1,98 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: base_project_api
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "19090:19090"
+    networks:
+      - base_project_network
+    depends_on:
+      valkey:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  valkey:
+    image: valkey/valkey:7.2.5
+    container_name: base_project_valkey
+    restart: unless-stopped
+    command: sh -c 'printf "requirepass ${VALKEY_PASSWORD}\nloglevel debug" | valkey-server -'
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+    networks:
+      - base_project_network
+    healthcheck:
+      test: [ "CMD", "valkey-cli", "ping" ]
+
+  postgres:
+    container_name: base_project_postgres
+    image: postgres:alpine
+    restart: unless-stopped
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "19091:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - base_project_network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: base_project_redis
+    image: redis
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    ports:
+      - 6379:6379
+    networks:
+      - base_project_network
+    volumes:
+      - redis_data:/data
+
+  goose:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: db/migrations
+      dockerfile: Dockerfile
+    command: sh -c "goose -dir=/app postgres postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable up"
+    volumes:
+      - ./db:/app
+    env_file:
+      - .env
+    networks:
+      - base_project_network
+
+  jaeger:
+    container_name: base_project_jaeger
+    image: jaegertracing/all-in-one
+    ports:
+      - "14268:14268"
+      - "16686:16686"
+    networks:
+      - base_project_network
+
+volumes:
+  postgres_data:
+  valkey_data:
+  redis_data:
+
+networks:
+  base_project_network:
+    driver: bridge
