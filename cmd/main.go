@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Service/internal/app"
+	"github.com/AdilBaidual/baseProject/internal/app"
 	"go.uber.org/fx"
 )
 

@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	test "Service/internal/TestEntity"
+	test "github.com/AdilBaidual/baseProject/internal/TestEntity"
 	"go.uber.org/zap"
 )
 

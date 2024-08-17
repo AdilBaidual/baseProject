@@ -1,11 +1,11 @@
 package config
 
 import (
-	"Service/pkg/grpcserver"
-	"Service/pkg/httpserver"
-	"Service/pkg/jaeger"
-	"Service/pkg/storage/postgres"
 	"fmt"
+	"github.com/AdilBaidual/baseProject/pkg/grpcserver"
+	"github.com/AdilBaidual/baseProject/pkg/httpserver"
+	"github.com/AdilBaidual/baseProject/pkg/jaeger"
+	"github.com/AdilBaidual/baseProject/pkg/storage/postgres"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package parser;
+
+option go_package = "github.com/AdilBaidual/baseProject/tmp;test";
+
+import "google/protobuf/empty.proto";
+
+service Tmp {
+  rpc Tmp(google.protobuf.Empty) returns (TmpResp);
+}
+
+message TmpResp {
+  string message = 1;
+}

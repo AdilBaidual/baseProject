@@ -1,9 +1,9 @@
 package http
 
 import (
-	"Service/constant"
-	"Service/internal/middleware"
 	"fmt"
+	"github.com/AdilBaidual/baseProject/constant"
+	"github.com/AdilBaidual/baseProject/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"

@@ -1,10 +1,10 @@
 package grpc
 
 import (
-	"Service/constant"
-	testpb "Service/pb/test"
 	"context"
 	"fmt"
+	"github.com/AdilBaidual/baseProject/constant"
+	testpb "github.com/AdilBaidual/baseProject/internal/pb/api/test"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

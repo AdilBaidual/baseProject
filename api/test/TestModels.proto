@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package parser;
-
-option go_package = "./;test_pb";
-
-message PingResponse {
-  string message = 1;
-}
