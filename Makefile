@@ -7,12 +7,14 @@ PROTO_API := ./api
 PROTO_SRC := $(PROTO_API)/$(PROJECT_NAME)/*/*.proto
 PROTO_OUT := ./internal/pb
 
+
 # Вывовд переменных
 print-env:
 	@echo "PROJECT_NAME = $(PROJECT_NAME)"
 	@echo "PROTO_API = $(PROTO_API)"
 	@echo "PROTO_SRC = $(PROTO_SRC)"
 	@echo "PROTO_OUT = $(PROTO_OUT)"
+
 
 # Команды для генерации gRPC кода
 generate: .generate
@@ -30,3 +32,10 @@ generate: .generate
         --openapiv2_opt=use_go_templates=true \
     	--proto_path=. \
     	$(PROTO_SRC)
+
+
+# Запуск проекта в docker-compose c тестовыми переменными
+run: .test-run
+
+.test-run:
+	@docker-compose --env-file test.env up --build
