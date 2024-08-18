@@ -26,5 +26,7 @@ generate: .generate
     	--go_opt=paths=source_relative \
     	--go-grpc_out=$(PROTO_OUT) \
     	--go-grpc_opt=paths=source_relative \
+    	--openapiv2_out=./internal/pb \
+        --openapiv2_opt=use_go_templates=true \
     	--proto_path=. \
     	$(PROTO_SRC)

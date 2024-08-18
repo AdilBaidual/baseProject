@@ -8,6 +8,7 @@ import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 service TestService {
+  // Ping ручка для тестов
   rpc Ping(google.protobuf.Empty) returns (PingResponse) {
     option (google.api.http) = {
       post: "/test",
@@ -17,5 +18,6 @@ service TestService {
 }
 
 message PingResponse {
+  // Сообщение
   string message = 1;
 }

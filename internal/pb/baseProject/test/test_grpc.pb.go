@@ -27,6 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TestServiceClient interface {
+	// Ping ручка для тестов
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
@@ -52,6 +53,7 @@ func (c *testServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ..
 // All implementations must embed UnimplementedTestServiceServer
 // for forward compatibility.
 type TestServiceServer interface {
+	// Ping ручка для тестов
 	Ping(context.Context, *emptypb.Empty) (*PingResponse, error)
 	mustEmbedUnimplementedTestServiceServer()
 }
