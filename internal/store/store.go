@@ -1,12 +1,14 @@
 package store
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type Store struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewStore(db *sqlx.DB) *Store {
+func NewStore(db *pgxpool.Pool) *Store {
 	return &Store{
 		db: db,
 	}

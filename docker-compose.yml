@@ -5,8 +5,9 @@ services:
     container_name: base_project_api
     build:
       context: .
+      dockerfile: Dockerfile
     env_file:
-      - .env
+      - test.env
     ports:
       - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
       - "${GRPC_SERVER_PORT}:${GRPC_SERVER_PORT}"
@@ -19,6 +20,8 @@ services:
   postgres:
     container_name: base_project_postgres
     image: postgres:alpine
+    env_file:
+      - test.env
     restart: unless-stopped
     command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
     environment:
@@ -26,7 +29,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -44,11 +47,11 @@ services:
     build:
       context: db/migrations
       dockerfile: Dockerfile
-    command: sh -c "goose -dir=/app postgres postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSLMODE} up"
+    command: sh -c "goose -dir=/app postgres postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}?sslmode=disable up"
     volumes:
       - ./db:/app
     env_file:
-      - .env
+      - test.env
     networks:
       - base_project_network
 

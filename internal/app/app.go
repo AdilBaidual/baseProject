@@ -6,7 +6,7 @@ import (
 	"github.com/AdilBaidual/baseProject/config"
 	testhandler "github.com/AdilBaidual/baseProject/internal/app/test"
 	"github.com/AdilBaidual/baseProject/internal/interceptor"
-	"github.com/AdilBaidual/baseProject/internal/service/test_service"
+	"github.com/AdilBaidual/baseProject/internal/service"
 	"github.com/AdilBaidual/baseProject/internal/store"
 	"github.com/AdilBaidual/baseProject/pkg/grpcserver"
 	"github.com/AdilBaidual/baseProject/pkg/httpserver"
@@ -33,7 +33,7 @@ func NewApp() fx.Option {
 		PostgresModule(),
 		RepositoryModule(),
 		ServiceModule(),
-		//JaegerModule(),
+		JaegerModule(),
 		HandlerModule(),
 		DeliveryModule(),
 		CheckInitializedModules(),
@@ -139,7 +139,7 @@ func RepositoryModule() fx.Option {
 func ServiceModule() fx.Option {
 	return fx.Module("service",
 		fx.Provide(
-			test_service.NewService,
+			service.NewServiceContainer,
 		),
 	)
 }
@@ -147,7 +147,9 @@ func ServiceModule() fx.Option {
 func HandlerModule() fx.Option {
 	return fx.Module("handler",
 		fx.Provide(
-			testhandler.NewHandler,
+			func(sc *service.ServiceContainer) *testhandler.Handler {
+				return testhandler.NewHandler(sc.GetTestService())
+			},
 		),
 	)
 }
@@ -241,7 +243,7 @@ func CheckInitializedModules() fx.Option {
 			func(logger *zap.Logger) {},
 			func(storage *postgres.Storage) {},
 			func(store *store.Store) {},
-			func(test *test_service.Service) {},
+			func(test *service.ServiceContainer) {},
 			func(test *testhandler.Handler) {},
 			//func(tracer *sdktrace.TracerProvider) {},
 			func(srv *grpcserver.Server) {},

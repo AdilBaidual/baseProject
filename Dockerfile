@@ -1,14 +1,22 @@
 FROM golang:1.22
 
+# Проверка версии Go
 RUN go version
+
+# Установка GOPATH
 ENV GOPATH=/
 
+# Копирование всех файлов в рабочую директорию контейнера
 COPY ./ ./
 
-# build go app
+# Загрузка зависимостей
 RUN go mod download
-RUN go build -o api ./cmd/main.go
 
-EXPOSE 19090
+# Сборка Go-приложения
+RUN go build -o /app/api ./cmd/main.go
 
-CMD ["./api"]
+# Проверка прав доступа к исполняемому файлу
+RUN chmod +x /app/api
+
+# Команда для запуска приложения
+CMD ["/app/api"]
