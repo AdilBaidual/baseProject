@@ -1,15 +1,17 @@
 package jaeger
 
 import (
-	"github.com/AdilBaidual/baseProject/constant"
+	"net"
+	"strconv"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"net"
-	"strconv"
+
+	"github.com/AdilBaidual/baseProject/constant"
 )
 
 type Config struct {
@@ -19,7 +21,8 @@ type Config struct {
 }
 
 func InitJaeger(cfg Config) (*sdktrace.TracerProvider, error) {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://" + net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)) + "/api/traces")))
+	endpoint := "http://" + net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)) + "/api/traces"
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpoint)))
 	if err != nil {
 		return nil, err
 	}

@@ -1,16 +1,22 @@
+app:
+  name: "baseProject"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+
 grpc_server:
   max_connection_idle: "5m"
   max_connection_age: "1h"
   time: "1m"
   timeout: "10s"
 
-server:
+http_server:
   read_timeout: "5s"
   write_timeout: "10s"
   shutdown_timeout: "10s"
 
 jaeger:
-  service_name: "service"
+  service_name: "baseProject"
   log_span: true
 
 postgres:

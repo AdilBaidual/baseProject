@@ -1,0 +1,168 @@
+# =============================================================================
+# Docker Compose для Production окружения
+# =============================================================================
+version: "3.8"
+
+name: prod-project
+
+services:
+  api:
+    container_name: prod_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_HTTP_PORT}:${HTTP_SERVER_PORT}"
+      - "${API_GRPC_PORT}:${GRPC_SERVER_PORT}"
+    environment:
+      - ENV=${ENV}
+      - GIN_MODE=release
+      - GRPC_SERVER_HOST=${GRPC_SERVER_HOST}
+      - GRPC_SERVER_PORT=${GRPC_SERVER_PORT}
+      - HTTP_SERVER_HOST=${HTTP_SERVER_HOST}
+      - HTTP_SERVER_PORT=${HTTP_SERVER_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_SSLMODE=${POSTGRES_SSLMODE}
+      - JAEGER_AGENT_HOST=${JAEGER_AGENT_HOST}
+      - JAEGER_AGENT_PORT=${JAEGER_AGENT_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+      jaeger:
+        condition: service_started
+    networks:
+      - prod_network
+    # Resource limits для production
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    container_name: prod_postgres
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - prod_postgres_data:/var/lib/postgresql/data
+    command:
+      [
+        "postgres",
+        "-c",
+        "log_statement=all",
+        "-c",
+        "log_destination=stderr",
+        "-c",
+        "max_connections=100",
+        "-c",
+        "shared_buffers=256MB",
+        "-c",
+        "effective_cache_size=1GB",
+      ]
+    networks:
+      - prod_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  jaeger:
+    container_name: prod_jaeger
+    image: jaegertracing/all-in-one
+    restart: unless-stopped
+    ports:
+      - "${JAEGER_UI_PORT}:16686"
+      - "${JAEGER_AGENT_PORT}:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=memory
+      - MEMORY_MAX_TRACES=50000
+    networks:
+      - prod_network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  migrations:
+    container_name: prod_migrations
+    image: golang:1.23-alpine
+    working_dir: /app
+    volumes:
+      - ./db:/app
+    command: |
+      sh -c "
+        go install github.com/pressly/goose/v3/cmd/goose@latest &&
+        goose -dir=/app postgres 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSLMODE}' up
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - prod_network
+    restart: "no"
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  prod_postgres_data:
+    driver: local
+
+networks:
+  prod_network:
+    driver: bridge

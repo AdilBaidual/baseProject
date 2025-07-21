@@ -1,0 +1,94 @@
+# More info on config here: https://golangci-lint.run/usage/configuration/#config-file
+run:
+  concurrency: 8
+  timeout: 10m
+  issues-exit-code: 1
+  tests: true
+  go: "1.22"
+
+output:
+  formats:
+    - format: colored-line-number
+      path: stdout
+
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/AdilBaidual/baseProject)
+  lll:
+    line-length: 140
+  revive:
+    severity: warning
+    confidence: 0.8
+    rules:
+      - name: var-naming
+        disabled: false
+      - name: package-comments
+        disabled: true
+      - name: exported
+        disabled: true
+
+linters:
+  disable-all: true
+  enable:
+    # Essential linters
+    - errcheck # Check for unchecked errors
+    - govet # Vet examines Go source code and reports suspicious constructs
+    - typecheck # Parse and type-check Go code
+    - unused # Check for unused constants, variables, functions and types
+    - ineffassign # Detect ineffectual assignments
+    - staticcheck # Advanced static analysis (megacheck successor)
+    - gosimple # Simplify code
+    # Code quality
+    - goconst # Find repeated strings that could be replaced by a constant
+    - revive # Fast, configurable, extensible, flexible linter
+    - gosec # Inspect source code for security problems
+    # Formatting
+    - gofmt # Check whether code was gofmt-ed
+    - goimports # Fix imports and format code
+    - gci # Control import order
+    # Optional but useful
+    - lll # Report long lines
+
+issues:
+  exclude-use-default: false
+  max-same-issues: 50
+  exclude-dirs:
+    - bin
+    - vendor
+    - var
+    - tmp
+    - .cache
+    - migrations
+  exclude-files:
+    - \.pb\.go$
+    - \.pb\.gw\.go$
+    - \.pb\.scratch\.go$
+    - \.pb\.goclay\.go$
+    - test\.swagger\.json$
+  exclude:
+    # _ instead of err checks
+    - G104
+    # for "public interface + private struct implementation" cases only!
+    - exported func .* returns unexported type .*, which can be annoying to use
+    # can be removed in the development phase
+    # - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+    # not for the active development - can be removed in the stable phase
+    - should have a package comment
+    - don't use an underscore in package name
+    # EXC0001 errcheck: Almost all programs ignore errors on these functions and in most cases it's ok
+    - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked
+    - should check returned error before deferring
+    # Project specific excludes
+    - SA1019.*jaeger.*is deprecated # We know Jaeger is deprecated but still using it
+    - unused-parameter.*ctx.*seems to be unused # Allow unused ctx in lifecycle hooks

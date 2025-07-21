@@ -2,11 +2,18 @@ package interceptor
 
 import (
 	"context"
+	"time"
+
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"time"
 )
+
+// contextKey defines a type for context keys to avoid conflicts
+type contextKey string
+
+// loggerKey is the context key for storing logger
+const loggerKey contextKey = "logger"
 
 type Interceptor struct {
 	logger *zap.Logger
@@ -19,12 +26,17 @@ func NewInterceptor(logger *zap.Logger) *Interceptor {
 }
 
 func (ic *Interceptor) LoggingInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
 		start := time.Now()
 
 		spanContext := trace.SpanContextFromContext(ctx)
 		requestLogger := ic.logger.With(zap.String("request_id", spanContext.TraceID().String()))
-		ctx = context.WithValue(ctx, "logger", requestLogger)
+		ctx = context.WithValue(ctx, loggerKey, requestLogger)
 
 		resp, err := handler(ctx, req)
 
@@ -39,4 +51,12 @@ func (ic *Interceptor) LoggingInterceptor() grpc.UnaryServerInterceptor {
 
 		return resp, err
 	}
+}
+
+// GetLoggerFromContext gets logger from context if available
+func GetLoggerFromContext(ctx context.Context, fallback *zap.Logger) *zap.Logger {
+	if logger, ok := ctx.Value(loggerKey).(*zap.Logger); ok && logger != nil {
+		return logger
+	}
+	return fallback
 }

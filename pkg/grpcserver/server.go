@@ -1,11 +1,12 @@
 package grpcserver
 
 import (
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 	"net"
 	"strconv"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type Config struct {

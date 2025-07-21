@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/AdilBaidual/baseProject/internal/app"
 	"go.uber.org/fx"
+
+	"github.com/AdilBaidual/baseProject/internal/app"
 )
 
 func main() {

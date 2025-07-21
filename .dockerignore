@@ -1,0 +1,55 @@
+# =============================================================================
+# .dockerignore file to optimize Docker build context
+# =============================================================================
+
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+*.md
+
+# Development files
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+*_test.go
+testdata/
+
+# Build artifacts
+bin/
+dist/
+tmp/
+*.exe
+
+# Node.js (if present)
+node_modules/
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Backup files
+*.backup
+*.bak
+
+# Local configuration files
+test.env

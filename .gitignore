@@ -1,2 +1,260 @@
-#config/test.env
-.idea
+# =============================================================================
+# Go Project .gitignore
+# =============================================================================
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/cmd/*/cmd
+/bin/
+/dist/
+/build/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+coverage.xml
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# Go module proxy cache
+/go/pkg/mod/
+
+# =============================================================================
+# Development Environment
+# =============================================================================
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Vim
+*.tmp
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# Operating System Files
+# =============================================================================
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# Application Specific
+# =============================================================================
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+!env.local
+!env.local.example
+
+# Configuration files with secrets
+config/secrets.yaml
+config/local.yaml
+config/*.local.*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+log/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+*.tmp
+*.temp
+
+# Cache directories
+.cache/
+*.cache
+
+# =============================================================================
+# Build and Deployment
+# =============================================================================
+
+# Docker
+.dockerignore.bak
+docker-compose.override.yml
+
+# Air (live reloading tool)
+tmp/
+.air.toml.local
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes
+*.kubeconfig
+kustomization.yaml.bak
+
+# =============================================================================
+# Development Tools
+# =============================================================================
+
+# GoLand/IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# =============================================================================
+# CI/CD and Testing
+# =============================================================================
+
+# Test coverage
+coverage.out
+coverage.html
+c.out
+profile.out
+
+# Benchmark files
+*.bench
+benchstat.txt
+
+# Test artifacts
+testdata/output/
+*.test.json
+
+# =============================================================================
+# Protocol Buffers and gRPC
+# =============================================================================
+
+# Generated protobuf files (if you want to ignore them)
+# *.pb.go
+# *.pb.gw.go
+# *.swagger.json
+
+# =============================================================================
+# Documentation
+# =============================================================================
+
+# Generated docs
+docs/build/
+docs/_build/
+site/
+
+# =============================================================================
+# Backup and Recovery
+# =============================================================================
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.rej
+*~
+
+# Recovery files
+*.swp
+*.swo
+*~
+
+# =============================================================================
+# Project Specific
+# =============================================================================
+
+# Local development files
+local/
+dev/
+
+# Migration rollback files
+*.rollback.sql
+
+# Local scripts
+scripts/local*
+scripts/dev*
+
+# =============================================================================
+# Security
+# =============================================================================
+
+# Private keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# JWT secrets
+jwt-secret*
+
+# TLS certificates
+tls/
+certs/
+ssl/

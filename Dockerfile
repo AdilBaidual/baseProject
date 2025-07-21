@@ -1,6 +1,6 @@
 FROM golang:1.22
 
-# Проверка версии Go
+# Установка зависимостей
 RUN go version
 
 # Установка GOPATH
@@ -13,10 +13,7 @@ COPY ./ ./
 RUN go mod download
 
 # Сборка Go-приложения
-RUN go build -o /app/api ./cmd/main.go
-
-# Проверка прав доступа к исполняемому файлу
-RUN chmod +x /app/api
+RUN go build -o app ./cmd/main.go
 
 # Команда для запуска приложения
-CMD ["/app/api"]
+CMD ["./app"]

@@ -1,3 +1,9 @@
 package constant
 
-const ServiceName = "service"
+const (
+	ServiceName = "baseProject"
+
+	// Application constants
+	DefaultTimeout = 30 // seconds
+	MaxRetries     = 3
+)
