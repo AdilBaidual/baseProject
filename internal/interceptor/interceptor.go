@@ -9,10 +9,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// contextKey defines a type for context keys to avoid conflicts
 type contextKey string
 
-// loggerKey is the context key for storing logger
 const loggerKey contextKey = "logger"
 
 type Interceptor struct {
@@ -53,7 +51,6 @@ func (ic *Interceptor) LoggingInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
-// GetLoggerFromContext gets logger from context if available
 func GetLoggerFromContext(ctx context.Context, fallback *zap.Logger) *zap.Logger {
 	if logger, ok := ctx.Value(loggerKey).(*zap.Logger); ok && logger != nil {
 		return logger

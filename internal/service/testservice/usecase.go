@@ -7,18 +7,15 @@ import (
 	"go.uber.org/zap"
 )
 
-// TestRepository defines the interface for test-related operations
 type TestRepository interface {
 	Pong(ctx context.Context) (string, error)
 }
 
-// Service handles business logic for test operations
 type Service struct {
 	logger *zap.Logger
 	repo   TestRepository
 }
 
-// NewService creates a new test service instance
 func NewService(logger *zap.Logger, repo TestRepository) *Service {
 	return &Service{
 		logger: logger,
@@ -26,7 +23,6 @@ func NewService(logger *zap.Logger, repo TestRepository) *Service {
 	}
 }
 
-// Pong handles the pong business logic
 func (s *Service) Pong(ctx context.Context) (string, error) {
 	s.logger.Info("Processing pong request")
 

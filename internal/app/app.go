@@ -28,7 +28,6 @@ import (
 	"github.com/AdilBaidual/baseProject/pkg/storage/postgres"
 )
 
-// NewApp creates and configures the FX application
 func NewApp() fx.Option {
 	return fx.Options(
 		// Core modules
@@ -50,7 +49,6 @@ func NewApp() fx.Option {
 	)
 }
 
-// ConfigModule provides application configuration
 func ConfigModule() fx.Option {
 	return fx.Module("config",
 		fx.Provide(
@@ -62,7 +60,6 @@ func ConfigModule() fx.Option {
 	)
 }
 
-// LoggerModule provides structured logging
 func LoggerModule() fx.Option {
 	return fx.Module("logger",
 		fx.Provide(
@@ -102,7 +99,6 @@ func LoggerModule() fx.Option {
 	)
 }
 
-// DatabaseModule provides database connectivity
 func DatabaseModule() fx.Option {
 	return fx.Module("database",
 		fx.Provide(
@@ -138,7 +134,6 @@ func DatabaseModule() fx.Option {
 	)
 }
 
-// TracingModule provides distributed tracing
 func TracingModule() fx.Option {
 	return fx.Module("tracing",
 		fx.Provide(
@@ -171,7 +166,6 @@ func TracingModule() fx.Option {
 	)
 }
 
-// RepositoryModule provides repository implementations
 func RepositoryModule() fx.Option {
 	return fx.Module("repository",
 		fx.Provide(
@@ -184,7 +178,6 @@ func RepositoryModule() fx.Option {
 	)
 }
 
-// ServiceModule provides business logic services
 func ServiceModule() fx.Option {
 	return fx.Module("service",
 		fx.Provide(
@@ -197,7 +190,6 @@ func ServiceModule() fx.Option {
 	)
 }
 
-// HandlerModule provides gRPC handlers
 func HandlerModule() fx.Option {
 	return fx.Module("handler",
 		fx.Provide(
@@ -206,7 +198,6 @@ func HandlerModule() fx.Option {
 	)
 }
 
-// ServerModule provides HTTP and gRPC servers
 func ServerModule() fx.Option {
 	return fx.Module("server",
 		fx.Provide(
@@ -252,7 +243,6 @@ func ServerModule() fx.Option {
 	)
 }
 
-// registerLifecycleHooks registers application lifecycle hooks
 func registerLifecycleHooks(
 	lc fx.Lifecycle,
 	grpcSrv *grpcserver.Server,

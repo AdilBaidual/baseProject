@@ -9,13 +9,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// Store implements all repository interfaces
 type Store struct {
 	db     *pgxpool.Pool
 	logger *zap.Logger
 }
 
-// NewStore creates a new Store instance that implements all repository interfaces
 func NewStore(db *pgxpool.Pool, logger *zap.Logger) *Store {
 	return &Store{
 		db:     db,
@@ -23,22 +21,18 @@ func NewStore(db *pgxpool.Pool, logger *zap.Logger) *Store {
 	}
 }
 
-// Ensure Store implements TestRepository interface
 var _ TestRepository = (*Store)(nil)
 
-// GetDB returns the database connection pool
 func (s *Store) GetDB() *pgxpool.Pool {
 	return s.db
 }
 
-// Close closes the database connection
 func (s *Store) Close() {
 	if s.db != nil {
 		s.db.Close()
 	}
 }
 
-// WithTx executes a function within a database transaction
 func (s *Store) WithTx(ctx context.Context, fn func(pgx.Tx) error) error {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {

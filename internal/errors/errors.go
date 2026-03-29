@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ErrorType represents the type of error
 type ErrorType int
 
 const (
@@ -24,7 +23,6 @@ const (
 	ErrorTypeRateLimit
 )
 
-// AppError represents a custom application error
 type AppError struct {
 	Type    ErrorType
 	Code    string
@@ -33,7 +31,6 @@ type AppError struct {
 	Cause   error
 }
 
-// Error implements the error interface
 func (e *AppError) Error() string {
 	if e.Cause != nil {
 		return fmt.Sprintf("%s: %v", e.Message, e.Cause)
@@ -41,12 +38,10 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
-// Unwrap implements the unwrap interface for error wrapping
 func (e *AppError) Unwrap() error {
 	return e.Cause
 }
 
-// WithDetails adds details to the error
 func (e *AppError) WithDetails(key string, value interface{}) *AppError {
 	if e.Details == nil {
 		e.Details = make(map[string]interface{})
@@ -55,7 +50,6 @@ func (e *AppError) WithDetails(key string, value interface{}) *AppError {
 	return e
 }
 
-// ToGRPCStatus converts AppError to gRPC status
 func (e *AppError) ToGRPCStatus() *status.Status {
 	switch e.Type {
 	case ErrorTypeValidation:
@@ -79,7 +73,6 @@ func (e *AppError) ToGRPCStatus() *status.Status {
 	}
 }
 
-// ToHTTPStatus converts AppError to HTTP status code
 func (e *AppError) ToHTTPStatus() int {
 	switch e.Type {
 	case ErrorTypeValidation:
@@ -103,9 +96,6 @@ func (e *AppError) ToHTTPStatus() int {
 	}
 }
 
-// Constructor functions for common error types
-
-// NewValidationError creates a validation error
 func NewValidationError(message string, cause error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeValidation,
@@ -115,7 +105,6 @@ func NewValidationError(message string, cause error) *AppError {
 	}
 }
 
-// NewNotFoundError creates a not found error
 func NewNotFoundError(resource string, id string) *AppError {
 	return &AppError{
 		Type:    ErrorTypeNotFound,
@@ -124,7 +113,6 @@ func NewNotFoundError(resource string, id string) *AppError {
 	}
 }
 
-// NewAlreadyExistsError creates an already exists error
 func NewAlreadyExistsError(resource string, id string) *AppError {
 	return &AppError{
 		Type:    ErrorTypeAlreadyExists,
@@ -133,7 +121,6 @@ func NewAlreadyExistsError(resource string, id string) *AppError {
 	}
 }
 
-// NewInternalError creates an internal error
 func NewInternalError(message string, cause error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeInternal,
@@ -143,7 +130,6 @@ func NewInternalError(message string, cause error) *AppError {
 	}
 }
 
-// NewExternalError creates an external service error
 func NewExternalError(service string, cause error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeExternal,
@@ -153,7 +139,6 @@ func NewExternalError(service string, cause error) *AppError {
 	}
 }
 
-// NewTimeoutError creates a timeout error
 func NewTimeoutError(operation string) *AppError {
 	return &AppError{
 		Type:    ErrorTypeTimeout,
@@ -162,7 +147,6 @@ func NewTimeoutError(operation string) *AppError {
 	}
 }
 
-// WrapError wraps an existing error with additional context
 func WrapError(err error, message string) *AppError {
 	if appErr, ok := err.(*AppError); ok {
 		return &AppError{
@@ -181,13 +165,11 @@ func WrapError(err error, message string) *AppError {
 	}
 }
 
-// IsAppError checks if error is of AppError type
 func IsAppError(err error) bool {
 	_, ok := err.(*AppError)
 	return ok
 }
 
-// AsAppError converts error to AppError if possible
 func AsAppError(err error) (*AppError, bool) {
 	appErr, ok := err.(*AppError)
 	return appErr, ok
